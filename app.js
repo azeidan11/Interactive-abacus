@@ -94,8 +94,8 @@ function createRods() {
     incBtn.textContent = '+';
     incBtn.onclick = () => incrementDigit(i);
 
-    buttons.appendChild(decBtn);
     buttons.appendChild(incBtn);
+    buttons.appendChild(decBtn);
     rod.appendChild(buttons);
 
     container.appendChild(rod);
