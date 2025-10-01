@@ -3,6 +3,14 @@ let numDigits = 6;
 let digitValues = [];
 let lastResult = null;
 
+// Helper for bead state class (single selection)
+function beadClassFor(digitValue, beadValue) {
+  if (beadValue === digitValue) {
+    return digitValue === 0 ? 'selected-zero' : 'selected';
+  }
+  return 'unselected';
+}
+
 function init() {
   resetValues();
   createRods();
@@ -10,7 +18,8 @@ function init() {
 }
 
 function resetValues() {
-  digitValues = new Array(8).fill(0);
+  // Initialize all visible digits to 0 so each rod highlights zero (green)
+  digitValues = new Array(numDigits).fill(0);
 }
 
 function showTool(evt, toolName) {
@@ -52,7 +61,8 @@ function createRods() {
       beadRow.appendChild(valueLabel);
 
       const bead = document.createElement('div');
-      bead.className = `bead ${j < digitValues[i] ? 'active' : 'inactive'}`;
+      const cls = beadClassFor(digitValues[i], j);
+      bead.className = `bead ${cls}`;
       bead.onclick = () => setBeadValue(i, j);
       beadRow.appendChild(bead);
 
@@ -120,11 +130,13 @@ function decrementDigit(digitIndex) {
 
 function updateRodDisplay(digitIndex) {
   const rod = document.getElementById(`rod${digitIndex}`);
+  if (!rod) return;
   const beadRows = rod.querySelectorAll('.bead-row');
   beadRows.forEach((row, index) => {
     const bead = row.querySelector('.bead');
-    const beadValue = currentBase - 1 - index;
-    bead.className = `bead ${beadValue < digitValues[digitIndex] ? 'active' : 'inactive'}`;
+    const beadValue = currentBase - 1 - index; // rows are top→bottom high→low
+    const cls = beadClassFor(digitValues[digitIndex], beadValue);
+    bead.className = `bead ${cls}`;
   });
 }
 
@@ -177,6 +189,9 @@ function changeDigits() {
   }
 
   numDigits = newDigits;
+  // Normalize array to exact size and zeros
+  digitValues = digitValues.slice(0, numDigits);
+  while (digitValues.length < numDigits) digitValues.push(0);
   createRods();
   updateDisplay();
 }
