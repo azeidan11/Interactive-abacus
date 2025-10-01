@@ -48,7 +48,19 @@ select,.reset-btn{padding:10px 15px;border-radius:8px;border:1px solid #ddd;font
 .base-info{color:#0ff;font-size:1.2rem;margin-top:10px}
 
 .abacus{background:linear-gradient(145deg,#2c3e50,#34495e);border-radius:15px;padding:30px;box-shadow:inset 0 5px 15px rgba(0,0,0,.3)}.rods-container{display:flex;justify-content:space-around;align-items:flex-end;min-height:0; /* allow the abacus box to shrink for small bases (e.g., base 2) */position:relative;padding-bottom:24px;padding-left:50px}
-.rod{display:flex;flex-direction:column;align-items:center;position:relative;padding:15px;min-height:0; /* let each rod size to its content (beads + controls) */}.rod::before{
+.rod{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  position:relative;
+  padding:15px;
+  min-height:0; /* let each rod size to its content (beads + controls) */
+  /* align controls with bead column center */
+  --label-w: 40px;
+  --bead-w: 55px;
+  --col-gap: 8px;
+}
+.rod::before{
   content: none; /* disable fixed line; we will draw it relative to bead height */
   display: none;
 }
@@ -61,6 +73,10 @@ select,.reset-btn{padding:10px 15px;border-radius:8px;border:1px solid #ddd;font
   flex:0 0 auto;            /* DO NOT stretch; height = content */
   width:100%;
   padding:4px 0;            /* small breathing room above/below beads */
+  /* sync with .bead-row grid sizes */
+  --label-w: 40px;
+  --bead-w: 55px;
+  --col-gap: 8px;
 }
 
 .bead-area::before{
@@ -68,7 +84,7 @@ select,.reset-btn{padding:10px 15px;border-radius:8px;border:1px solid #ddd;font
   position:absolute;
   top:0;          /* start at top of bead stack */
   bottom:0;       /* end at bottom of bead stack */
-  left:50%;
+  left: calc(var(--label-w) + var(--col-gap) + (var(--bead-w) / 2) + 4px);
   width:4px;
   background:linear-gradient(to bottom,#7f8c8d,#95a5a6);
   transform:translateX(-50%);
@@ -139,6 +155,10 @@ select,.reset-btn{padding:10px 15px;border-radius:8px;border:1px solid #ddd;font
   gap:10px;
   margin-top:8px;
   order:1; /* buttons come first */
+  position: relative;
+  align-self: flex-start; /* allow horizontal offset from left edge of rod */
+  left: calc(var(--label-w) + var(--col-gap) + (var(--bead-w) / 2) + 4px);
+  transform: translateX(-50%); /* center the button group on the line */
 }
 
 .place-value{
@@ -152,7 +172,11 @@ select,.reset-btn{padding:10px 15px;border-radius:8px;border:1px solid #ddd;font
   background:rgba(0,0,0,.7);
   padding:4px 8px;
   border-radius:12px;
-  border:1px solid rgba(255,255,255,.3)
+  border:1px solid rgba(255,255,255,.3);
+  position: relative;
+  align-self: flex-start;
+  left: calc(var(--label-w) + var(--col-gap) + (var(--bead-w) / 2) + 4px);
+  transform: translateX(-50%);
 }
 .increment-btn,.decrement-btn{
      background:linear-gradient(145deg,#00d2ff,#3a7bd5);color:#fff;border:none;padding:12px 22px;border-radius:24px;cursor:pointer;font-weight:600;
