@@ -1,7 +1,17 @@
 let currentBase = 10;
 let numDigits = 6;
 let digitValues = [];
+
 let lastResult = null;
+
+// Helper to check if all active digits are zero
+function isAllZero() {
+  // check only the active digits
+  for (let i = 0; i < numDigits; i++) {
+    if (digitValues[i] !== 0) return false;
+  }
+  return true;
+}
 
 // Helper for bead state class (single selection)
 function beadClassFor(digitValue, beadValue) {
@@ -117,6 +127,8 @@ function incrementDigit(digitIndex) {
 }
 
 function decrementDigit(digitIndex) {
+  // Prevent going below zero when the entire value is zero
+  if (isAllZero()) return;
   digitValues[digitIndex]--;
   if (digitValues[digitIndex] < 0) {
     digitValues[digitIndex] = currentBase - 1;
