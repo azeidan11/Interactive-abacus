@@ -1,1702 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Abacus - Learn Number Systems</title>
-    <meta name="description" content="An interactive abacus for learning different number systems and bases">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            color: white;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .header p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.1rem;
-        }
-
-        .toolbar {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .tool-btn {
-            background: linear-gradient(145deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
-        }
-
-        .tool-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
-        }
-
-        .tool-btn.active {
-            background: linear-gradient(145deg, #ff6b6b, #ffa500);
-        }
-
-        .tool-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            display: none;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .tool-panel.active {
-            display: block;
-        }
-
-        .abacus-container {
-            background: linear-gradient(145deg, #1a1a2e, #16213e);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        }
-
-        .controls {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .control-group label {
-            color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        select, .reset-btn {
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 1rem;
-            background: white;
-            cursor: pointer;
-        }
-
-        .reset-btn {
-            background: linear-gradient(145deg, #ff4757, #ff3742);
-            color: white;
-            border: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .reset-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
-        }
-
-        .display {
-            background: #000;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-            border: 3px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-        }
-
-        .display-value {
-            font-family: 'Courier New', monospace;
-            font-size: 2rem;
-            color: #0ff;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-            letter-spacing: 0.1em;
-        }
-
-        .base-info {
-            color: #0ff;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-
-        .abacus {
-            background: linear-gradient(145deg, #2c3e50, #34495e);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .rods-container {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            min-height: 350px;
-            position: relative;
-            padding-bottom: 90px;
-            padding-left: 50px;
-        }
-
-        .rod {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            padding: 10px;
-            min-height: 280px;
-        }
-
-        .rod::before {
-            content: '';
-            position: absolute;
-            top: 50px;
-            bottom: 80px;
-            left: 50%;
-            width: 4px;
-            background: linear-gradient(to bottom, #7f8c8d, #95a5a6);
-            transform: translateX(-50%);
-            border-radius: 2px;
-        }
-
-        .bead-container {
-            display: flex;
-            flex-direction: column-reverse;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .value-labels {
-            position: absolute;
-            left: -40px;
-            top: 50px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            color: white;
-            font-weight: 600;
-        }
-
-        .value-label {
-            height: 29px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 5px;
-        }
-
-        .bead {
-            width: 40px;
-            height: 25px;
-            margin: 2px 0;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .bead.active {
-            background: linear-gradient(145deg, #ff4757, #ff3742);
-            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
-            transform: scale(1.1);
-        }
-
-        .bead.inactive {
-            background: linear-gradient(145deg, #95a5a6, #7f8c8d);
-        }
-
-        .place-value {
-            position: absolute;
-            bottom: -40px;
-            font-size: 0.75rem;
-            color: white;
-            font-weight: 600;
-            text-align: center;
-            width: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 4px 8px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-            position: absolute;
-            bottom: 10px;
-        }
-
-        .increment-btn, .decrement-btn {
-            background: linear-gradient(145deg, #00d2ff, #3a7bd5);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 10px rgba(0, 210, 255, 0.3);
-        }
-
-        .increment-btn:hover, .decrement-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);
-        }
-
-        .instructions {
-            line-height: 1.6;
-        }
-
-        .instructions h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-        }
-
-        .instructions ul {
-            padding-left: 20px;
-            margin-bottom: 15px;
-        }
-
-        .instructions li {
-            margin-bottom: 8px;
-        }
-
-        .video-section {
-            text-align: center;
-        }
-
-        .video-placeholder {
-            background: linear-gradient(145deg, #2c3e50, #34495e);
-            color: white;
-            padding: 60px 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            font-size: 1.2rem;
-        }
-
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .rods-container {
-                min-height: 250px;
-            }
-            
-            .rod {
-                min-height: 230px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .display-value {
-                font-size: 1.5rem;
-            }
-        }
-
-        .carry-animation {
-            animation: carry 0.5s ease-in-out;
-        }
-
-        @keyframes carry {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); background: #ffd700; }
-        }
-
-        .learning-tip {
-            background: linear-gradient(145deg, #74b9ff, #0984e3);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border-left: 4px solid #0984e3;
-        }
-
-        .base-comparison {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .base-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .arithmetic-section {
-            margin-bottom: 30px;
-        }
-
-        .arithmetic-controls {
-            margin-bottom: 20px;
-        }
-
-        .operation-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .op-btn {
-            background: linear-gradient(145deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .op-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .calculator-panel, .step-panel {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .calc-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        .calc-input, .calc-select {
-            padding: 12px 15px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            font-size: 1rem;
-            background: white;
-            min-width: 120px;
-        }
-
-        .calc-btn {
-            background: linear-gradient(145deg, #2ecc71, #27ae60);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-        }
-
-        .calc-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
-        }
-
-        .result-display {
-            background: #000;
-            color: #0ff;
-            padding: 15px;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            border: 2px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-            margin-bottom: 15px;
-        }
-
-        .use-result-btn {
-            background: linear-gradient(145deg, #f39c12, #e67e22);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .use-result-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
-        }
-
-        .step-controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        .step-btn {
-            background: linear-gradient(145deg, #9b59b6, #8e44ad);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .step-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
-        }
-
-        .step-display {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        .step-example {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border-left: 4px solid #3498db;
-            font-family: 'Courier New', monospace;
-        }
-
-        .highlight {
-            background: #ffeb3b;
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #333;
-            font-weight: bold;
-        }
-
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-
-        .video-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .video-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .video-thumbnail {
-            position: relative;
-            height: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        .video-thumbnail.binary-bg {
-            background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
-        }
-
-        .video-thumbnail.hex-bg {
-            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
-        }
-
-        .video-thumbnail.conversion-bg {
-            background: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%);
-        }
-
-        .video-thumbnail.addition-bg {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-        }
-
-        .video-thumbnail.subtraction-bg {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        }
-
-        .video-thumbnail.octal-bg {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-        }
-
-        .video-thumbnail.complete-bg {
-            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
-        }
-
-        .play-button {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: #333;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .video-thumbnail:hover .play-button {
-            transform: scale(1.1);
-            background: white;
-        }
-
-        .video-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-            color: white;
-            padding: 20px 15px 15px;
-            text-align: center;
-        }
-
-        .video-overlay h4 {
-            color: white;
-            margin-bottom: 5px;
-            font-size: 1.1rem;
-        }
-
-        .video-overlay p {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin: 0;
-        }
-
-        .video-info {
-            padding: 20px;
-            text-align: center;
-        }
-
-        .video-description {
-            color: #666;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 15px;
-        }
-
-        .watch-btn {
-            display: inline-block;
-            background: linear-gradient(145deg, #ff6b6b, #ffa500);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-        }
-
-        .watch-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-            text-decoration: none;
-            color: white;
-        }
-
-        .learning-resources {
-            margin-top: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .learning-resources h4 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .resource-links {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .resource-btn {
-            display: inline-block;
-            background: linear-gradient(145deg, #3498db, #2980b9);
-            color: white;
-            text-decoration: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-        }
-
-        .resource-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-            text-decoration: none;
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .video-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .resource-links {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .resource-btn {
-                width: 100%;
-                max-width: 300px;
-                text-align: center;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interactive Abacus - Learn Number Systems</title>
+  <meta name="description" content="An interactive abacus for learning different number systems and bases"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>">
+  <link rel="stylesheet" href="./styles.css"/>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">
-            <h1>🧮 Interactive Abacus</h1>
-            <p>Learn number systems and arithmetic in different bases</p>
-        </div>
-
-        <div class="toolbar">
-            <button class="tool-btn active" onclick="showTool('instructions')">📚 Instructions</button>
-            <button class="tool-btn" onclick="showTool('abacus')">🧮 Abacus</button>
-            <button class="tool-btn" onclick="showTool('videos')">🎥 Learning Videos</button>
-        </div>
-
-        <div id="instructions" class="tool-panel active">
-            <div class="instructions">
-                <h3>Welcome to the Interactive Abacus!</h3>
-                <p>This modern abacus helps you understand different number systems and perform arithmetic operations. Here's how to use it:</p>
-                
-                <h3>🎯 Getting Started</h3>
-                <ul>
-                    <li><strong>Choose a Base:</strong> Select from binary (base 2) to hexadecimal (base 16)</li>
-                    <li><strong>Set Digits:</strong> Choose how many place values you want to work with</li>
-                    <li><strong>Click Beads:</strong> Click on the colored beads to change their values</li>
-                    <li><strong>Use Buttons:</strong> Use the + and - buttons below each column for precise control</li>
-                </ul>
-
-                <h3>🔢 Understanding Bases</h3>
-                <ul>
-                    <li><strong>Binary (Base 2):</strong> Uses only 0 and 1 - fundamental to computer systems</li>
-                    <li><strong>Decimal (Base 10):</strong> Our everyday counting system with digits 0-9</li>
-                    <li><strong>Hexadecimal (Base 16):</strong> Uses 0-9 and A-F, common in computing</li>
-                </ul>
-
-                <div class="learning-tip">
-                    💡 <strong>Pro Tip:</strong> Try counting from 0 to 20 in different bases to see how the patterns change!
-                </div>
-            </div>
-        </div>
-
-        <div id="abacus" class="tool-panel">
-            <div class="abacus-container">
-                <div class="controls">
-                    <div class="control-group">
-                        <label for="baseSelect">Number Base:</label>
-                        <select id="baseSelect" onchange="changeBase()">
-                            <option value="2">Binary (Base 2)</option>
-                            <option value="4">Quaternary (Base 4)</option>
-                            <option value="8">Octal (Base 8)</option>
-                            <option value="10" selected>Decimal (Base 10)</option>
-                            <option value="16">Hexadecimal (Base 16)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="digitsSelect">Number of Places:</label>
-                        <select id="digitsSelect" onchange="changeDigits()">
-                            <option value="4">4 Places</option>
-                            <option value="6" selected>6 Places</option>
-                            <option value="8">8 Places</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>&nbsp;</label>
-                        <button class="reset-btn" onclick="resetAbacus()">🔄 Reset</button>
-                    </div>
-                </div>
-
-                <div class="arithmetic-section">
-                    <div class="arithmetic-controls">
-                        <div class="control-group">
-                            <label>Arithmetic Operations:</label>
-                            <div class="operation-buttons">
-                                <button class="op-btn" onclick="showCalculator()">🧮 Calculator Mode</button>
-                                <button class="op-btn" onclick="showStepByStep()">📝 Step-by-Step</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="calculatorMode" class="calculator-panel" style="display: none;">
-                        <div class="calc-inputs">
-                            <div class="calc-row">
-                                <input type="text" id="operand1" placeholder="First number" class="calc-input">
-                                <select id="operation" class="calc-select">
-                                    <option value="add">+</option>
-                                    <option value="subtract">−</option>
-                                    <option value="multiply">×</option>
-                                    <option value="divide">÷</option>
-                                    <option value="mod">mod</option>
-                                    <option value="power">^</option>
-                                </select>
-                                <input type="text" id="operand2" placeholder="Second number" class="calc-input">
-                                <button class="calc-btn" onclick="performOperation()">=</button>
-                            </div>
-                            <div class="calc-result">
-                                <div class="result-display" id="calcResult">Result will appear here</div>
-                                <button class="use-result-btn" onclick="useResult()" style="display:none;" id="useResultBtn">Use Result on Abacus</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="stepByStepMode" class="step-panel" style="display: none;">
-                        <div class="step-controls">
-                            <button class="step-btn" onclick="startAddition()">+ Addition</button>
-                            <button class="step-btn" onclick="startSubtraction()">− Subtraction</button>
-                            <button class="step-btn" onclick="startMultiplication()">× Multiplication</button>
-                            <button class="step-btn" onclick="startDivision()">÷ Division</button>
-                        </div>
-                        <div class="step-display" id="stepDisplay">
-                            <p>Choose an operation above to see step-by-step instructions.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="display">
-                    <div class="display-value" id="displayValue">000000</div>
-                    <div class="base-info">
-                        <span id="baseInfo">Base 10 (Decimal)</span> | 
-                        <span id="decimalValue">Decimal: 0</span>
-                    </div>
-                </div>
-
-                <div class="base-comparison" id="baseComparison">
-                    <div class="base-card">
-                        <strong>Binary</strong><br>
-                        <span id="binaryValue">0</span>
-                    </div>
-                    <div class="base-card">
-                        <strong>Octal</strong><br>
-                        <span id="octalValue">0</span>
-                    </div>
-                    <div class="base-card">
-                        <strong>Decimal</strong><br>
-                        <span id="decimalValueComp">0</span>
-                    </div>
-                    <div class="base-card">
-                        <strong>Hex</strong><br>
-                        <span id="hexValue">0</span>
-                    </div>
-                </div>
-
-                <div class="abacus">
-                    <div class="rods-container" id="rodsContainer">
-                        <!-- Rods will be generated dynamically -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="videos" class="tool-panel">
-            <div class="video-section">
-                <h3>📺 Educational Videos</h3>
-                <p>Learn about number systems and arithmetic with these carefully selected educational videos:</p>
-                
-                <div class="video-grid">
-                    <!-- Introduction to Number Systems -->
-                    <div class="video-card">
-                        <div class="video-thumbnail">
-                            <div class="play-button">▶</div>
-                            <div class="video-overlay">
-                                <h4>🔢 Introduction to Number Systems</h4>
-                                <p>Khan Academy's comprehensive introduction to different number systems</p>
-                            </div>
-                        </div>
-                        <div class="video-info">
-                            <p class="video-description">Learn the fundamentals of binary, decimal, hexadecimal, and other number systems.</p>
-                            <a href="https://www.youtube.com/watch?v=ku4KOFQ-bB4" target="_blank" class="watch-btn">
-                                📺 Watch on YouTube
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Binary Numbers Explained -->
-                    <div class="video-card">
-                        <div class="video-thumbnail binary-bg">
-                            <div class="play-button">▶</div>
-                            <div class="video-overlay">
-                                <h4>💻 Binary Numbers Explained</h4>
-                                <p>Understanding the base-2 number system</p>
-                            </div>
-                        </div>
-                        <div class="video-info">
-                            <p class="video-description">A clear explanation of binary numbers and how computers use them.</p>
-                            <a href="https://www.youtube.com/watch?v=1GSjbWt0c9M" target="_blank" class="watch-btn">
-                                📺 Watch on YouTube
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Hexadecimal Number System -->
-                    <div class="video-card">
-                        <div class="video-thumbnail hex-bg">
-                            <div class="play-button">▶</div>
-                            <div class="video-overlay">
-                                <h4>🔠 Hexadecimal Number System</h4>
-                                <p>Master the base-16 system used in computing</p>
-                            </div>
-                        </div>
-                        <div class="video-info">
-                            <p class="video-description">Understanding hexadecimal and its importance in programming and computer science.</p>
-                            <a href="https://www.youtube.com/watch?v=4EJay-6Bioo" target="_blank" class="watch-btn">
-                                📺 Watch on YouTube
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Number Base Conversions -->
-                    <div class="video-card">
-                        <div class="video-thumbnail conversion-bg">
-                            <div class="play-button">▶</div>
-                            <div class="video-overlay">
-                                <h4>🔄 Number Base Conversions</h4>
-                                <p>Convert between different number systems</p>
-                            </div>
-                        </div>
-                        <div class="video-info">
-                            <p class="video-description">Practice converting between binary, decimal, octal, and hexadecimal.</p>
-                            <a href="https://www.youtube.com/watch?v=wsUB-WBwEKs" target="_blank" class="watch-btn">
-                                📺 Watch on YouTube
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Binary Addition -->
-                    <div class="video-card">
-                        <div class="video-thumbnail addition-bg">
-                            <div class="play-button">▶</div>
-                            <div class="video-overlay">
-                                <h4>➕ Binary Addition</h4>
-                                <p>Learn addition in the binary system</p>
-                            </div>
-                        </div>
-                        <div class="video-info">
-                            <p class="video-description">Step-by-step guide to performing addition in binary with carrying.</p>
-                            <a href="https://www.youtube.com/watch?v=C5EkxfNEMjE" target="_blank" class="watch-btn">
-                                📺 Watch on YouTube
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Binary Subtraction -->
-                    <div class="video-card">
-                        <div class="video-thumbnail subtraction-bg">
-                            <div class="play-button">▶</div>
-                            <div class="video-overlay">
-                                <h4>➖ Binary Subtraction</h4>
-                                <p>Master binary subtraction techniques</p>
-                            </div>
-                        </div>
-                        <div class="video-info">
-                            <p class="video-description">Learn binary subtraction with borrowing and two's complement.</p>
-                            <a href="https://www.youtube.com/watch?v=S9LJknZTyos" target="_blank" class="watch-btn">
-                                📺 Watch on YouTube
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Octal Number System -->
-                    <div class="video-card">
-                        <div class="video-thumbnail octal-bg">
-                            <div class="play-button">▶</div>
-                            <div class="video-overlay">
-                                <h4>🔢 Octal Number System</h4>
-                                <p>Understanding base-8 mathematics</p>
-                            </div>
-                        </div>
-                        <div class="video-info">
-                            <p class="video-description">Explore the octal number system and its applications.</p>
-                            <a href="https://www.youtube.com/watch?v=plTOo72K2H0" target="_blank" class="watch-btn">
-                                📺 Watch on YouTube
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Complete Guide -->
-                    <div class="video-card">
-                        <div class="video-thumbnail complete-bg">
-                            <div class="play-button">▶</div>
-                            <div class="video-overlay">
-                                <h4>🎯 Complete Number Systems Guide</h4>
-                                <p>Comprehensive overview of all number systems</p>
-                            </div>
-                        </div>
-                        <div class="video-info">
-                            <p class="video-description">Complete guide covering decimal, binary, octal, and hexadecimal systems.</p>
-                            <a href="https://www.youtube.com/watch?v=FFDMzbrEXaE" target="_blank" class="watch-btn">
-                                📺 Watch on YouTube
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="learning-resources">
-                    <h4>📚 Additional Learning Resources</h4>
-                    <div class="resource-links">
-                        <a href="https://www.khanacademy.org/math/algebra-home/alg-intro-to-algebra/algebra-alternate-number-bases" target="_blank" class="resource-btn">
-                            🎓 Khan Academy - Number Systems Course
-                        </a>
-                        <a href="https://www.mathsisfun.com/binary-decimal-hexadecimal.html" target="_blank" class="resource-btn">
-                            📖 Math is Fun - Number Systems Reference
-                        </a>
-                        <a href="https://www.rapidtables.com/convert/number/" target="_blank" class="resource-btn">
-                            🧮 Online Number Base Converter
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="app-container">
+    <div class="header">
+      <h1>🧮 Interactive Abacus</h1>
+      <p>Learn number systems and arithmetic in different bases</p>
     </div>
 
-    <script>
-        let currentBase = 10;
-        let numDigits = 6;
-        let digitValues = [];
-        let lastResult = null;
+    <div class="toolbar">
+      <button class="tool-btn active" onclick="showTool(event,'instructions')">📚 Instructions</button>
+      <button class="tool-btn" onclick="showTool(event,'abacus')">🧮 Abacus</button>
+      <button class="tool-btn" onclick="showTool(event,'videos')">🎥 Learning Videos</button>
+    </div>
 
-        function init() {
-            resetValues();
-            createRods();
-            updateDisplay();
-        }
+    <div id="instructions" class="tool-panel active">
+      <div class="instructions">
+        <h3>Welcome to the Interactive Abacus!</h3>
+        <p>This modern abacus helps you understand different number systems and perform arithmetic operations. Here's how to use it:</p>
 
-        function resetValues() {
-            digitValues = new Array(8).fill(0);
-        }
+        <h3>🎯 Getting Started</h3>
+        <ul>
+          <li><strong>Choose a Base:</strong> Select from binary (base 2) to hexadecimal (base 16)</li>
+          <li><strong>Set Digits:</strong> Choose how many place values you want to work with</li>
+          <li><strong>Click Beads:</strong> Click on the colored beads to change their values</li>
+          <li><strong>Use Buttons:</strong> Use the + and - buttons below each column for precise control</li>
+        </ul>
 
-        function showTool(toolName) {
-            document.querySelectorAll('.tool-panel').forEach(panel => {
-                panel.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.tool-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(toolName).classList.add('active');
-            event.target.classList.add('active');
+        <h3>🔢 Understanding Bases</h3>
+        <ul>
+          <li><strong>Binary (Base 2):</strong> Uses only 0 and 1 - fundamental to computer systems</li>
+          <li><strong>Decimal (Base 10):</strong> Our everyday counting system with digits 0-9</li>
+          <li><strong>Hexadecimal (Base 16):</strong> Uses 0-9 and A-F, common in computing</li>
+        </ul>
 
-            if (toolName === 'abacus' && !document.getElementById('rodsContainer').children.length) {
-                createRods();
-            }
-        }
+        <div class="learning-tip">
+          💡 <strong>Pro Tip:</strong> Try counting from 0 to 20 in different bases to see how the patterns change!
+        </div>
+      </div>
+    </div>
 
-        function createRods() {
-            const container = document.getElementById('rodsContainer');
-            container.innerHTML = '';
-            
-            for (let i = numDigits - 1; i >= 0; i--) {
-                const rod = document.createElement('div');
-                rod.className = 'rod';
-                rod.id = `rod${i}`;
-                
-                // Add place value label at top
-                const placeLabel = document.createElement('div');
-                placeLabel.className = 'place-value';
-                placeLabel.textContent = `${currentBase}^${i}`;
-                rod.appendChild(placeLabel);
-                
-                // Create a wrapper for labels and beads together
-                const beadArea = document.createElement('div');
-                beadArea.className = 'bead-area';
-                
-                // Create beads from highest value to lowest (top to bottom)
-                for (let j = currentBase - 1; j >= 0; j--) {
-                    const beadRow = document.createElement('div');
-                    beadRow.className = 'bead-row';
-                    
-                    // Value label on the left
-                    const valueLabel = document.createElement('span');
-                    valueLabel.className = 'value-label';
-                    if (currentBase <= 10) {
-                        valueLabel.textContent = j.toString();
-                    } else {
-                        valueLabel.textContent = j < 10 ? j.toString() : String.fromCharCode(65 + j - 10);
-                    }
-                    beadRow.appendChild(valueLabel);
-                    
-                    // The bead itself
-                    const bead = document.createElement('div');
-                    bead.className = `bead ${j < digitValues[i] ? 'active' : 'inactive'}`;
-                    bead.onclick = () => setBeadValue(i, j);
-                    beadRow.appendChild(bead);
-                    
-                    beadArea.appendChild(beadRow);
-                }
-                
-                rod.appendChild(beadArea);
-                
-                // Add control buttons at bottom
-                const buttons = document.createElement('div');
-                buttons.className = 'buttons';
-                
-                const decBtn = document.createElement('button');
-                decBtn.className = 'decrement-btn';
-                decBtn.textContent = '-';
-                decBtn.onclick = () => decrementDigit(i);
-                
-                const incBtn = document.createElement('button');
-                incBtn.className = 'increment-btn';
-                incBtn.textContent = '+';
-                incBtn.onclick = () => incrementDigit(i);
-                
-                buttons.appendChild(decBtn);
-                buttons.appendChild(incBtn);
-                rod.appendChild(buttons);
-                
-                container.appendChild(rod);
-            }
-        }
+    <div id="abacus" class="tool-panel">
+      <div class="abacus-container">
+        <div class="controls">
+          <div class="control-group">
+            <label for="baseSelect">Number Base:</label>
+            <select id="baseSelect" onchange="changeBase()">
+              <option value="2">Binary (Base 2)</option>
+              <option value="4">Quaternary (Base 4)</option>
+              <option value="8">Octal (Base 8)</option>
+              <option value="10" selected>Decimal (Base 10)</option>
+              <option value="16">Hexadecimal (Base 16)</option>
+            </select>
+          </div>
 
-        function setBeadValue(digitIndex, value) {
-            digitValues[digitIndex] = value;
-            updateRodDisplay(digitIndex);
-            updateDisplay();
-        }
+          <div class="control-group">
+            <label for="digitsSelect">Number of Places:</label>
+            <select id="digitsSelect" onchange="changeDigits()">
+              <option value="4">4 Places</option>
+              <option value="6" selected>6 Places</option>
+              <option value="8">8 Places</option>
+            </select>
+          </div>
 
-        function toggleBead(digitIndex, beadIndex) {
-            // Not used anymore, kept for compatibility
-            setBeadValue(digitIndex, beadIndex);
-        }
+          <div class="control-group">
+            <label>&nbsp;</label>
+            <button class="reset-btn" onclick="resetAbacus()">🔄 Reset</button>
+          </div>
+        </div>
 
-        function incrementDigit(digitIndex) {
-            digitValues[digitIndex]++;
-            if (digitValues[digitIndex] >= currentBase) {
-                digitValues[digitIndex] = 0;
-                if (digitIndex < numDigits - 1) {
-                    incrementDigit(digitIndex + 1);
-                    animateCarry(digitIndex + 1);
-                }
-            }
-            updateRodDisplay(digitIndex);
-            updateDisplay();
-        }
+        <div class="arithmetic-section">
+          <div class="arithmetic-controls">
+            <div class="control-group">
+              <label>Arithmetic Operations:</label>
+              <div class="operation-buttons">
+                <button class="op-btn" onclick="showCalculator()">🧮 Calculator Mode</button>
+                <button class="op-btn" onclick="showStepByStep()">📝 Step-by-Step</button>
+              </div>
+            </div>
+          </div>
 
-        function decrementDigit(digitIndex) {
-            digitValues[digitIndex]--;
-            if (digitValues[digitIndex] < 0) {
-                digitValues[digitIndex] = currentBase - 1;
-                if (digitIndex < numDigits - 1) {
-                    decrementDigit(digitIndex + 1);
-                }
-            }
-            updateRodDisplay(digitIndex);
-            updateDisplay();
-        }
+          <div id="calculatorMode" class="calculator-panel" style="display: none;">
+            <div class="calc-inputs">
+              <div class="calc-row">
+                <input type="text" id="operand1" placeholder="First number" class="calc-input">
+                <select id="operation" class="calc-select">
+                  <option value="add">+</option>
+                  <option value="subtract">−</option>
+                  <option value="multiply">×</option>
+                  <option value="divide">÷</option>
+                  <option value="mod">mod</option>
+                  <option value="power">^</option>
+                </select>
+                <input type="text" id="operand2" placeholder="Second number" class="calc-input">
+                <button class="calc-btn" onclick="performOperation()">=</button>
+              </div>
+              <div class="calc-result">
+                <div class="result-display" id="calcResult">Result will appear here</div>
+                <button class="use-result-btn" onclick="useResult()" style="display:none;" id="useResultBtn">Use Result on Abacus</button>
+              </div>
+            </div>
+          </div>
 
-        function updateRodDisplay(digitIndex) {
-            const rod = document.getElementById(`rod${digitIndex}`);
-            const beadRows = rod.querySelectorAll('.bead-row');
-            
-            // Each row contains a label and a bead
-            // Rows are ordered from highest to lowest value (top to bottom)
-            beadRows.forEach((row, index) => {
-                const bead = row.querySelector('.bead');
-                const beadValue = currentBase - 1 - index;
-                bead.className = `bead ${beadValue < digitValues[digitIndex] ? 'active' : 'inactive'}`;
-            });
-        }
+          <div id="stepByStepMode" class="step-panel" style="display: none;">
+            <div class="step-controls">
+              <button class="step-btn" onclick="startAddition()">+ Addition</button>
+              <button class="step-btn" onclick="startSubtraction()">− Subtraction</button>
+              <button class="step-btn" onclick="startMultiplication()">× Multiplication</button>
+              <button class="step-btn" onclick="startDivision()">÷ Division</button>
+            </div>
+            <div class="step-display" id="stepDisplay">
+              <p>Choose an operation above to see step-by-step instructions.</p>
+            </div>
+          </div>
+        </div>
 
-        function animateCarry(digitIndex) {
-            const rod = document.getElementById(`rod${digitIndex}`);
-            rod.classList.add('carry-animation');
-            setTimeout(() => rod.classList.remove('carry-animation'), 500);
-        }
+        <div class="display">
+          <div class="display-value" id="displayValue">000000</div>
+          <div class="base-info">
+            <span id="baseInfo">Base 10 (Decimal)</span> |
+            <span id="decimalValue">Decimal: 0</span>
+          </div>
+        </div>
 
-        function updateDisplay() {
-            let displayStr = '';
-            let decimalValue = 0;
-            
-            for (let i = numDigits - 1; i >= 0; i--) {
-                const digit = digitValues[i];
-                if (currentBase <= 10) {
-                    displayStr += digit.toString();
-                } else {
-                    displayStr += digit < 10 ? digit.toString() : String.fromCharCode(65 + digit - 10);
-                }
-                decimalValue += digit * Math.pow(currentBase, i);
-            }
-            
-            document.getElementById('displayValue').textContent = displayStr || '0';
-            document.getElementById('decimalValue').textContent = `Decimal: ${decimalValue}`;
-            
-            document.getElementById('binaryValue').textContent = decimalValue.toString(2);
-            document.getElementById('octalValue').textContent = decimalValue.toString(8);
-            document.getElementById('decimalValueComp').textContent = decimalValue.toString(10);
-            document.getElementById('hexValue').textContent = decimalValue.toString(16).toUpperCase();
-        }
+        <div class="base-comparison" id="baseComparison">
+          <div class="base-card">
+            <strong>Binary</strong><br>
+            <span id="binaryValue">0</span>
+          </div>
+          <div class="base-card">
+            <strong>Octal</strong><br>
+            <span id="octalValue">0</span>
+          </div>
+          <div class="base-card">
+            <strong>Decimal</strong><br>
+            <span id="decimalValueComp">0</span>
+          </div>
+          <div class="base-card">
+            <strong>Hex</strong><br>
+            <span id="hexValue">0</span>
+          </div>
+        </div>
 
-        function changeBase() {
-            currentBase = parseInt(document.getElementById('baseSelect').value);
-            
-            for (let i = 0; i < numDigits; i++) {
-                if (digitValues[i] >= currentBase) {
-                    digitValues[i] = 0;
-                }
-            }
-            
-            const baseNames = {
-                2: 'Binary',
-                4: 'Quaternary', 
-                8: 'Octal',
-                10: 'Decimal',
-                16: 'Hexadecimal'
-            };
-            
-            document.getElementById('baseInfo').textContent = 
-                `Base ${currentBase} (${baseNames[currentBase]})`;
-            
-            createRods();
-            updateDisplay();
-        }
+        <div class="abacus">
+          <div class="rods-container" id="rodsContainer">
+            <!-- Rods generated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
 
-        function changeDigits() {
-            const newDigits = parseInt(document.getElementById('digitsSelect').value);
-            
-            if (newDigits < numDigits) {
-                digitValues = digitValues.slice(0, newDigits);
-            } else {
-                while (digitValues.length < newDigits) {
-                    digitValues.push(0);
-                }
-            }
-            
-            numDigits = newDigits;
-            createRods();
-            updateDisplay();
-        }
+    <div id="videos" class="tool-panel">
+      <div class="video-section">
+        <h3>📺 Educational Videos</h3>
+        <p>Learn about number systems and arithmetic with these carefully selected educational videos:</p>
 
-        function resetAbacus() {
-            resetValues();
-            createRods();
-            updateDisplay();
-        }
+        <div class="video-grid">
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <div class="play-button">▶</div>
+              <div class="video-overlay">
+                <h4>🔢 Introduction to Number Systems</h4>
+                <p>Khan Academy's comprehensive introduction to different number systems</p>
+              </div>
+            </div>
+            <div class="video-info">
+              <p class="video-description">Learn the fundamentals of binary, decimal, hexadecimal, and other number systems.</p>
+              <a href="https://www.youtube.com/watch?v=ku4KOFQ-bB4" target="_blank" class="watch-btn">📺 Watch on YouTube</a>
+            </div>
+          </div>
 
-        function showCalculator() {
-            const calc = document.getElementById('calculatorMode');
-            const step = document.getElementById('stepByStepMode');
-            
-            if (calc.style.display === 'none' || calc.style.display === '') {
-                calc.style.display = 'block';
-                step.style.display = 'none';
-            } else {
-                calc.style.display = 'none';
-            }
-        }
+          <div class="video-card">
+            <div class="video-thumbnail binary-bg">
+              <div class="play-button">▶</div>
+              <div class="video-overlay">
+                <h4>💻 Binary Numbers Explained</h4>
+                <p>Understanding the base-2 number system</p>
+              </div>
+            </div>
+            <div class="video-info">
+              <p class="video-description">A clear explanation of binary numbers and how computers use them.</p>
+              <a href="https://www.youtube.com/watch?v=1GSjbWt0c9M" target="_blank" class="watch-btn">📺 Watch on YouTube</a>
+            </div>
+          </div>
 
-        function showStepByStep() {
-            const calc = document.getElementById('calculatorMode');
-            const step = document.getElementById('stepByStepMode');
-            
-            if (step.style.display === 'none' || step.style.display === '') {
-                step.style.display = 'block';
-                calc.style.display = 'none';
-            } else {
-                step.style.display = 'none';
-            }
-        }
+          <div class="video-card">
+            <div class="video-thumbnail hex-bg">
+              <div class="play-button">▶</div>
+              <div class="video-overlay">
+                <h4>🔠 Hexadecimal Number System</h4>
+                <p>Master the base-16 system used in computing</p>
+              </div>
+            </div>
+            <div class="video-info">
+              <p class="video-description">Understanding hexadecimal and its importance in programming and computer science.</p>
+              <a href="https://www.youtube.com/watch?v=4EJay-6Bioo" target="_blank" class="watch-btn">📺 Watch on YouTube</a>
+            </div>
+          </div>
 
-        function parseNumber(numStr, base) {
-            if (!numStr) return 0;
-            return parseInt(numStr, base);
-        }
+          <div class="video-card">
+            <div class="video-thumbnail conversion-bg">
+              <div class="play-button">▶</div>
+              <div class="video-overlay">
+                <h4>🔄 Number Base Conversions</h4>
+                <p>Convert between different number systems</p>
+              </div>
+            </div>
+            <div class="video-info">
+              <p class="video-description">Practice converting between binary, decimal, octal, and hexadecimal.</p>
+              <a href="https://www.youtube.com/watch?v=wsUB-WBwEKs" target="_blank" class="watch-btn">📺 Watch on YouTube</a>
+            </div>
+          </div>
 
-        function numberToBase(num, base) {
-            if (num === 0) return '0';
-            let result = '';
-            while (num > 0) {
-                const digit = num % base;
-                if (digit < 10) {
-                    result = digit + result;
-                } else {
-                    result = String.fromCharCode(65 + digit - 10) + result;
-                }
-                num = Math.floor(num / base);
-            }
-            return result;
-        }
+          <div class="video-card">
+            <div class="video-thumbnail addition-bg">
+              <div class="play-button">▶</div>
+              <div class="video-overlay">
+                <h4>➕ Binary Addition</h4>
+                <p>Learn addition in the binary system</p>
+              </div>
+            </div>
+            <div class="video-info">
+              <p class="video-description">Step-by-step guide to performing addition in binary with carrying.</p>
+              <a href="https://www.youtube.com/watch?v=C5EkxfNEMjE" target="_blank" class="watch-btn">📺 Watch on YouTube</a>
+            </div>
+          </div>
 
-        function performOperation() {
-            const operand1 = document.getElementById('operand1').value;
-            const operand2 = document.getElementById('operand2').value;
-            const operation = document.getElementById('operation').value;
-            
-            if (!operand1 || !operand2) {
-                document.getElementById('calcResult').textContent = 'Please enter both numbers';
-                return;
-            }
+          <div class="video-card">
+            <div class="video-thumbnail subtraction-bg">
+              <div class="play-button">▶</div>
+              <div class="video-overlay">
+                <h4>➖ Binary Subtraction</h4>
+                <p>Master binary subtraction techniques</p>
+              </div>
+            </div>
+            <div class="video-info">
+              <p class="video-description">Learn binary subtraction with borrowing and two's complement.</p>
+              <a href="https://www.youtube.com/watch?v=S9LJknZTyos" target="_blank" class="watch-btn">📺 Watch on YouTube</a>
+            </div>
+          </div>
 
-            const num1 = parseNumber(operand1, currentBase);
-            const num2 = parseNumber(operand2, currentBase);
-            let result;
-            let resultText = '';
+          <div class="video-card">
+            <div class="video-thumbnail octal-bg">
+              <div class="play-button">▶</div>
+              <div class="video-overlay">
+                <h4>🔢 Octal Number System</h4>
+                <p>Understanding base-8 mathematics</p>
+              </div>
+            </div>
+            <div class="video-info">
+              <p class="video-description">Explore the octal number system and its applications.</p>
+              <a href="https://www.youtube.com/watch?v=plTOo72K2H0" target="_blank" class="watch-btn">📺 Watch on YouTube</a>
+            </div>
+          </div>
 
-            try {
-                switch (operation) {
-                    case 'add':
-                        result = num1 + num2;
-                        resultText = `${operand1} + ${operand2} = ${numberToBase(result, currentBase)} (base ${currentBase})`;
-                        break;
-                    case 'subtract':
-                        result = num1 - num2;
-                        resultText = `${operand1} - ${operand2} = ${numberToBase(Math.abs(result), currentBase)} (base ${currentBase})`;
-                        if (result < 0) resultText += ' [NEGATIVE]';
-                        break;
-                    case 'multiply':
-                        result = num1 * num2;
-                        resultText = `${operand1} × ${operand2} = ${numberToBase(result, currentBase)} (base ${currentBase})`;
-                        break;
-                    case 'divide':
-                        if (num2 === 0) {
-                            resultText = 'Error: Division by zero';
-                            break;
-                        }
-                        result = Math.floor(num1 / num2);
-                        const remainder = num1 % num2;
-                        resultText = `${operand1} ÷ ${operand2} = ${numberToBase(result, currentBase)}`;
-                        if (remainder > 0) {
-                            resultText += ` remainder ${numberToBase(remainder, currentBase)}`;
-                        }
-                        resultText += ` (base ${currentBase})`;
-                        break;
-                    case 'mod':
-                        if (num2 === 0) {
-                            resultText = 'Error: Modulo by zero';
-                            break;
-                        }
-                        result = num1 % num2;
-                        resultText = `${operand1} mod ${operand2} = ${numberToBase(result, currentBase)} (base ${currentBase})`;
-                        break;
-                    case 'power':
-                        result = Math.pow(num1, num2);
-                        if (result > 1000000) {
-                            resultText = 'Result too large to display';
-                            break;
-                        }
-                        resultText = `${operand1}^${operand2} = ${numberToBase(result, currentBase)} (base ${currentBase})`;
-                        break;
-                }
+          <div class="video-card">
+            <div class="video-thumbnail complete-bg">
+              <div class="play-button">▶</div>
+              <div class="video-overlay">
+                <h4>🎯 Complete Number Systems Guide</h4>
+                <p>Comprehensive overview of all number systems</p>
+              </div>
+            </div>
+            <div class="video-info">
+              <p class="video-description">Complete guide covering decimal, binary, octal, and hexadecimal systems.</p>
+              <a href="https://www.youtube.com/watch?v=FFDMzbrEXaE" target="_blank" class="watch-btn">📺 Watch on YouTube</a>
+            </div>
+          </div>
+        </div>
 
-                lastResult = Math.abs(result);
-                document.getElementById('calcResult').innerHTML = 
-                    `${resultText}<br><small>Decimal: ${lastResult}</small>`;
-                
-                if (lastResult !== undefined && !isNaN(lastResult) && lastResult !== null) {
-                    document.getElementById('useResultBtn').style.display = 'inline-block';
-                }
+        <div class="learning-resources">
+          <h4>📚 Additional Learning Resources</h4>
+          <div class="resource-links">
+            <a href="https://www.khanacademy.org/math/algebra-home/alg-intro-to-algebra/algebra-alternate-number-bases" target="_blank" class="resource-btn">🎓 Khan Academy - Number Systems Course</a>
+            <a href="https://www.mathsisfun.com/binary-decimal-hexadecimal.html" target="_blank" class="resource-btn">📖 Math is Fun - Number Systems Reference</a>
+            <a href="https://www.rapidtables.com/convert/number/" target="_blank" class="resource-btn">🧮 Online Number Base Converter</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            } catch (error) {
-                document.getElementById('calcResult').textContent = 'Error in calculation';
-            }
-        }
-
-        function useResult() {
-            if (lastResult === null || lastResult === undefined) return;
-            setAbacusValue(lastResult);
-        }
-
-        function setAbacusValue(decimalValue) {
-            resetValues();
-            
-            let value = Math.abs(Math.floor(decimalValue));
-            for (let i = 0; i < numDigits && value > 0; i++) {
-                digitValues[i] = value % currentBase;
-                value = Math.floor(value / currentBase);
-            }
-            
-            createRods();
-            updateDisplay();
-        }
-
-        function startAddition() {
-            const display = document.getElementById('stepDisplay');
-            display.innerHTML = `
-                <h4>Addition in Base ${currentBase}</h4>
-                <p>Adding numbers works the same in any base - you carry when the sum equals or exceeds the base.</p>
-                
-                <div class="step-example">
-                <strong>Example: Adding ${currentBase === 10 ? '127 + 56' : '23 + 12'} in base ${currentBase}</strong><br><br>
-                ${getAdditionSteps()}
-                </div>
-                
-                <p><strong>Try it:</strong></p>
-                <ol>
-                    <li>Set the first number on the abacus</li>
-                    <li>Use the + buttons to add the second number, column by column</li>
-                    <li>Watch how carries work automatically!</li>
-                </ol>
-            `;
-        }
-
-        function startSubtraction() {
-            const display = document.getElementById('stepDisplay');
-            display.innerHTML = `
-                <h4>Subtraction in Base ${currentBase}</h4>
-                <p>Subtraction requires borrowing when a digit is smaller than what you're subtracting.</p>
-                
-                <div class="step-example">
-                <strong>Example: Subtracting ${currentBase === 10 ? '152 - 67' : '32 - 15'} in base ${currentBase}</strong><br><br>
-                ${getSubtractionSteps()}
-                </div>
-                
-                <p><strong>Try it:</strong></p>
-                <ol>
-                    <li>Set the larger number on the abacus</li>
-                    <li>Use the - buttons to subtract, column by column</li>
-                    <li>Watch how borrowing works across columns!</li>
-                </ol>
-            `;
-        }
-
-        function startMultiplication() {
-            const display = document.getElementById('stepDisplay');
-            display.innerHTML = `
-                <h4>Multiplication in Base ${currentBase}</h4>
-                <p>Multiplication is repeated addition with place value shifts.</p>
-                
-                <div class="step-example">
-                <strong>Example: ${currentBase === 10 ? '23 × 12' : '12 × 3'} in base ${currentBase}</strong><br><br>
-                ${getMultiplicationSteps()}
-                </div>
-                
-                <p><strong>Try it:</strong></p>
-                <ol>
-                    <li>Start with the first number on the abacus</li>
-                    <li>Add that number to itself multiple times</li>
-                    <li>Or use the calculator mode for quick results!</li>
-                </ol>
-            `;
-        }
-
-        function startDivision() {
-            const display = document.getElementById('stepDisplay');
-            display.innerHTML = `
-                <h4>Division in Base ${currentBase}</h4>
-                <p>Division is repeated subtraction - see how many times the divisor fits into the dividend.</p>
-                
-                <div class="step-example">
-                <strong>Example: ${currentBase === 10 ? '84 ÷ 12' : '20 ÷ 4'} in base ${currentBase}</strong><br><br>
-                ${getDivisionSteps()}
-                </div>
-                
-                <p><strong>Try it:</strong></p>
-                <ol>
-                    <li>Set the dividend (number to be divided) on the abacus</li>
-                    <li>Subtract the divisor repeatedly</li>
-                    <li>Count how many times you can subtract - that's your quotient!</li>
-                </ol>
-            `;
-        }
-
-        function getAdditionSteps() {
-            if (currentBase === 10) {
-                return `
-                  127<br>
-                + 56<br>
-                ----<br>
-                Starting from right: 7 + 6 = 13<br>
-                13 ≥ 10, so write 3 and carry 1<br>
-                Middle: 2 + 5 + 1(carry) = 8<br>
-                Left: 1 + 0 = 1<br>
-                <span class="highlight">Result: 183</span>
-                `;
-            } else if (currentBase === 2) {
-                return `
-                  101<br>
-                + 011<br>
-                ----<br>
-                Starting from right: 1 + 1 = 10 (binary)<br>
-                Write 0 and carry 1<br>
-                Middle: 0 + 1 + 1(carry) = 10 (binary)<br>
-                Write 0 and carry 1<br>
-                Left: 1 + 0 + 1(carry) = 10 (binary)<br>
-                <span class="highlight">Result: 1000 (base 2)</span>
-                `;
-            } else if (currentBase === 8) {
-                return `
-                  25<br>
-                + 17<br>
-                ----<br>
-                Starting from right: 5 + 7 = 12 (decimal) = 14 (octal)<br>
-                Write 4 and carry 1<br>
-                Left: 2 + 1 + 1(carry) = 4<br>
-                <span class="highlight">Result: 44 (base 8)</span>
-                `;
-            } else if (currentBase === 16) {
-                return `
-                  2A<br>
-                + 1F<br>
-                ----<br>
-                Starting from right: A + F = 10 + 15 = 25 (decimal) = 19 (hex)<br>
-                Write 9 and carry 1<br>
-                Left: 2 + 1 + 1(carry) = 4<br>
-                <span class="highlight">Result: 49 (base 16)</span>
-                `;
-            } else {
-                return `
-                  12<br>
-                + 13<br>
-                ----<br>
-                Starting from right: 2 + 3 = 5<br>
-                5 < ${currentBase}, so write 5<br>
-                Left: 1 + 1 = 2<br>
-                <span class="highlight">Result: 25 (base ${currentBase})</span>
-                `;
-            }
-        }
-
-        function getSubtractionSteps() {
-            if (currentBase === 10) {
-                return `
-                  152<br>
-                -  67<br>
-                ----<br>
-                Right: 2 - 7? Need to borrow!<br>
-                Borrow 1 from 5: 12 - 7 = 5<br>
-                Middle: 4 - 6? Need to borrow!<br>
-                Borrow 1 from 1: 14 - 6 = 8<br>
-                Left: 0 - 0 = 0<br>
-                <span class="highlight">Result: 85</span>
-                `;
-            } else if (currentBase === 2) {
-                return `
-                  101<br>
-                - 011<br>
-                ----<br>
-                Right: 1 - 1 = 0<br>
-                Middle: 0 - 1? Need to borrow!<br>
-                Borrow from left: 10 - 1 = 1<br>
-                Left: 0 - 0 = 0<br>
-                <span class="highlight">Result: 010 = 10 (base 2)</span>
-                `;
-            } else if (currentBase === 8) {
-                return `
-                  32<br>
-                - 15<br>
-                ----<br>
-                Right: 2 - 5? Need to borrow!<br>
-                Borrow 1 from 3: (2 + 8) - 5 = 5<br>
-                Left: 2 - 1 = 1<br>
-                <span class="highlight">Result: 15 (base 8)</span>
-                `;
-            } else if (currentBase === 16) {
-                return `
-                  23<br>
-                - 14<br>
-                ----<br>
-                Right: 3 - 4? Need to borrow!<br>
-                Borrow 1 from 2: (3 + 16) - 4 = 15 = F<br>
-                Left: 1 - 1 = 0<br>
-                <span class="highlight">Result: F (base 16)</span>
-                `;
-            } else {
-                return `
-                  23<br>
-                - 14<br>
-                ----<br>
-                Right: 3 - 4? Need to borrow!<br>
-                Borrow 1 from 2: (3 + ${currentBase}) - 4 = ${numberToBase(3 + currentBase - 4, currentBase)}<br>
-                Left: 1 - 1 = 0<br>
-                <span class="highlight">Result: ${numberToBase(3 + currentBase - 4, currentBase)} (base ${currentBase})</span>
-                `;
-            }
-        }
-
-        function getMultiplicationSteps() {
-            if (currentBase === 10) {
-                return `
-                    23<br>
-                  × 12<br>
-                  ----<br>
-                  Step 1: 23 × 2 = 46<br>
-                  Step 2: 23 × 10 = 230<br>
-                  Step 3: Add them:<br>
-                     46<br>
-                  + 230<br>
-                  ----<br>
-                  <span class="highlight">Result: 276</span>
-                `;
-            } else if (currentBase === 2) {
-                return `
-                    101<br>
-                  ×  11<br>
-                  ----<br>
-                  Step 1: 101 × 1 = 101<br>
-                  Step 2: 101 × 10 = 1010<br>
-                  Step 3: Add them:<br>
-                     101<br>
-                  + 1010<br>
-                  ----<br>
-                  <span class="highlight">Result: 1111 (base 2)</span>
-                `;
-            } else if (currentBase === 16) {
-                return `
-                    A<br>
-                  × 3<br>
-                  ----<br>
-                  A × 3 = 10 × 3 = 30 (decimal) = 1E (hex)<br>
-                  <span class="highlight">Result: 1E (base 16)</span>
-                `;
-            } else {
-                const num1 = parseInt('12', currentBase);
-                const num2 = 3;
-                const result = num1 * num2;
-                return `
-                    12<br>
-                  ×  3<br>
-                  ----<br>
-                  12 × 3 in base ${currentBase}<br>
-                  Convert: ${num1} × 3 = ${result} (decimal)<br>
-                  <span class="highlight">Result: ${numberToBase(result, currentBase)} (base ${currentBase})</span>
-                `;
-            }
-        }
-
-        function getDivisionSteps() {
-            if (currentBase === 10) {
-                return `
-                  84 ÷ 12<br>
-                  ----<br>
-                  How many 12s fit in 84?<br>
-                  12 × 7 = 84 ✓<br>
-                  <span class="highlight">Result: 7</span>
-                `;
-            } else if (currentBase === 2) {
-                return `
-                  1100 ÷ 11 (base 2)<br>
-                  ----<br>
-                  1100 = 12 (decimal)<br>
-                  11 = 3 (decimal)<br>
-                  12 ÷ 3 = 4 (decimal)<br>
-                  4 = 100 (binary)<br>
-                  <span class="highlight">Result: 100 (base 2)</span>
-                `;
-            } else if (currentBase === 16) {
-                return `
-                  20 ÷ 4 (base 16)<br>
-                  ----<br>
-                  20 (hex) = 32 (decimal)<br>
-                  4 (hex) = 4 (decimal)<br>
-                  32 ÷ 4 = 8 (decimal)<br>
-                  8 = 8 (hex)<br>
-                  <span class="highlight">Result: 8 (base 16)</span>
-                `;
-            } else {
-                const dividend = parseInt('20', currentBase);
-                const divisor = parseInt('4', currentBase);
-                const quotient = Math.floor(dividend / divisor);
-                return `
-                  20 ÷ 4 (base ${currentBase})<br>
-                  ----<br>
-                  Convert to decimal: ${dividend} ÷ ${divisor}<br>
-                  Result in decimal: ${quotient}<br>
-                  <span class="highlight">Result: ${numberToBase(quotient, currentBase)} (base ${currentBase})</span>
-                `;
-            }
-        }
-
-        window.onload = init;
-    </script>
+  <script defer src="./app.js"></script>
 </body>
 </html>
